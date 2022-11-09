@@ -4,48 +4,103 @@ import java.io.*;
 import java.util.ArrayList;
 
 public class GameHelper {
-    
 
+    public String[][] createLocation() {
+        ArrayList<String> allPositions = new ArrayList<String>(); //Keeps track of all positions that exist on the grid
+        ArrayList<String> availableVertical = new ArrayList<String>(); //Keeps track of positions where you can start a new vertically aligned ship.
+        ArrayList<String> availableHorizontal = new ArrayList<String>();//Keeps track of positions where you can start a new horizontally aligned ship.
+        String[][] locations = new String[3][3]; //The three ship's positions on the grid.
 
-    public void createLocation() {
-        ArrayList<String> verticalStarts = new ArrayList<String>();
-        ArrayList<String> horizontalStarts = new ArrayList<String>();
-        ArrayList<ArrayList<String>> locations = new ArrayList<ArrayList<String>>();
+        String[] rowLabels = {"A", "B", "C", "D", "E", "F", "G"}; //Used for creating the string to represent one square of a ship.
+
+        //Populates all above arrays with the data necessary for placing ships.
         for(int i = 0; i < 7; i++) {
-            String verticalCode[] = {"A", "B", "C", "D", "E", "F", "G"};
             for(int j = 0; j < 7; j++) {
-                verticalStarts.add(verticalCode[i] + Integer.toString(j + 1));
-                horizontalStarts.add(verticalCode[i] + Integer.toString(j + 1));
+                allPositions.add(rowLabels[i] + Integer.toString((j + 1)));
+                if(j < 5) {
+                    availableHorizontal.add(rowLabels[i] + Integer.toString((j + 1)));
+                }                
+                if(i < 5) {
+                    availableVertical.add(rowLabels[i] + Integer.toString((j + 1)));
+                }                
             }
         }
 
+        //Position the ships in unique locations so that they are not overlapping.
         for(int i = 0; i < 3; i++) {
-            int alignment = (int) (Math.random() * 2);
+            int orientation = (int) (Math.random()*2);
 
-            if(alignment < 1) {
-                System.out.println("alignment = Horizontal");
-                int column = (int) (Math.random() * 7);
-                int row = (int) (Math.random() * 5);
-                int start = (column * 7) + row;
-                System.out.println("start = " + start);
-                ArrayList<String> location = new ArrayList<String>();
-                location.add(horizontalStarts.get(start));
-                location.add(horizontalStarts.get(start + 1));
-                location.add(horizontalStarts.get(start + 2));
-                locations.add(location);
+            if(orientation < 1) {
+                int startIndex = (int) (Math.random() * availableHorizontal.size());
+                int allPositionsIndex = allPositions.indexOf(availableHorizontal.get(startIndex));
+                locations[i][0] = availableHorizontal.get(startIndex); //First square
+                locations[i][1] = allPositions.get(allPositionsIndex + 1); //Second square
+                locations[i][2] = allPositions.get(allPositionsIndex + 2); // Third square
+
+                //All the below is for removing starting locations which would cause a ship to overlap another.
+                availableHorizontal.remove(allPositions.get(allPositionsIndex)); 
+                availableHorizontal.remove(allPositions.get(allPositionsIndex + 1));
+                availableHorizontal.remove(allPositions.get(allPositionsIndex + 2));
+                availableVertical.remove(allPositions.get(allPositionsIndex));
+                availableVertical.remove(allPositions.get(allPositionsIndex + 1));
+                availableVertical.remove(allPositions.get(allPositionsIndex + 2));
+
+                if(allPositionsIndex - 2 >= 0 && allPositions.get(allPositionsIndex - 2).charAt(0) == (allPositions.get(allPositionsIndex).charAt(0))) {
+                    availableHorizontal.remove(allPositions.get(allPositionsIndex - 2));                    
+                }
+
+                if(allPositionsIndex - 1 >= 0 && allPositions.get(allPositionsIndex - 1).charAt(0) == (allPositions.get(allPositionsIndex).charAt(0))) {
+                    availableHorizontal.remove(allPositions.get(allPositionsIndex - 1));
+                }
+
+                if(allPositionsIndex - 14 >= 0) {
+                    availableVertical.remove(allPositions.get(allPositionsIndex - 14));
+                    availableVertical.remove(allPositions.get(allPositionsIndex - 13));
+                    availableVertical.remove(allPositions.get(allPositionsIndex - 12));
+                }
+
+                if(allPositionsIndex - 7 >= 0) {
+                    availableVertical.remove(allPositions.get(allPositionsIndex - 7));
+                    availableVertical.remove(allPositions.get(allPositionsIndex - 6));
+                    availableVertical.remove(allPositions.get(allPositionsIndex - 5));
+                }                
+
             } else {
-                System.out.println("Vertical");
-                int start = (int) (Math.random() * 35);
-                ArrayList<String> location = new ArrayList<String>();
-                location.add(verticalStarts.get(start));
-                location.add(verticalStarts.get(start + 7));
-                location.add(verticalStarts.get(start + 14));
-                locations.add(location);
+                int startIndex = (int) (Math.random() * availableVertical.size());
+                int allPositionsIndex = allPositions.indexOf(availableVertical.get(startIndex));
+                locations[i][0] = availableVertical.get(startIndex);
+                locations[i][1] = allPositions.get(allPositionsIndex + 7);
+                locations[i][2] = allPositions.get(allPositionsIndex + 14);
+
+                availableVertical.remove(allPositions.get(allPositionsIndex));
+                availableVertical.remove(allPositions.get(allPositionsIndex + 7));
+                availableVertical.remove(allPositions.get(allPositionsIndex + 14));
+                availableHorizontal.remove(allPositions.get(allPositionsIndex));
+                availableHorizontal.remove(allPositions.get(allPositionsIndex + 7));
+                availableHorizontal.remove(allPositions.get(allPositionsIndex + 14));
+
+                if(allPositionsIndex - 14 >= 0) {
+                    availableVertical.remove(allPositions.get(allPositionsIndex - 14));                    
+                }
+                
+                if(allPositionsIndex - 7 >= 0) {
+                    availableVertical.remove(allPositions.get(allPositionsIndex - 7));                    
+                }
+                
+                if(allPositionsIndex - 2 >= 0 && allPositions.get(allPositionsIndex - 2).charAt(0) == (allPositions.get(allPositionsIndex).charAt(0))) { //First check if out of bounds then check if in the same row by checking first character.
+                    availableHorizontal.remove(allPositions.get(allPositionsIndex - 2));
+                    availableHorizontal.remove(allPositions.get(allPositionsIndex + 5));
+                    availableHorizontal.remove(allPositions.get(allPositionsIndex + 12));
+                }
+
+                if(allPositionsIndex - 1 >= 0 && allPositions.get(allPositionsIndex - 1).charAt(0) == (allPositions.get(allPositionsIndex).charAt(0))) {
+                    availableHorizontal.remove(allPositions.get(allPositionsIndex - 1));
+                    availableHorizontal.remove(allPositions.get(allPositionsIndex + 6));
+                    availableHorizontal.remove(allPositions.get(allPositionsIndex + 13));
+                }
             }
         }
-        System.out.println(locations);
-        System.out.println(verticalStarts);
-        System.out.println(horizontalStarts);
+        return locations;
     }
 
     public String getUserInput(String prompt) {

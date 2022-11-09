@@ -3,34 +3,44 @@ package Battleships;
 import java.util.ArrayList;
 
 public class Battleship {
-    ArrayList<String> location = new ArrayList<>();
-    int hits;
+    private String name;
+    ArrayList<String> location = new ArrayList<String>();
 
-    public void setLocation(int start) {
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String text) {
+        name = text;
+    }
+
+    public void setLocation(String[] ship) {
         for(int i = 0; i < 3; i++) {
-            location.add(String.valueOf(start + i));
+            location.add(ship[i].toLowerCase());
         }
     }
 
-    public boolean checkCondition(String guess) {
-        boolean shipSunk = false;
-        boolean hit = location.remove(guess);
+    public boolean hit(String guess) {
+        boolean hit = location.remove(guess.toLowerCase());
+        System.out.println(location);
 
-        if(!hit) {
-            System.out.println("Bad luck old bean, I'm sure you'll get him next time.");
-            return shipSunk;
+        if(hit) {
+            System.out.printf("You hit the %s ship!  Great job old chap.\n", getName());
+            location.remove(guess);
         } else {
-            hits++;
-            System.out.println("You hit an enemy ship!  Great job old chap.");
-            shipSunk = location.isEmpty();
+            System.out.println("Bad luck old bean, I'm sure you'll get him next time.");
+        }   
+
+        return hit;
+    }
+
+    public boolean sunk() {
+        boolean sunk = location.isEmpty();
+        if(sunk) {
+            System.out.printf("You've bloody sunk %s old bean, brilliant job.\n", getName());
+        } else {
+            System.out.printf("That blighter %s's still floating, hit him again and that should do it!\n", getName());
         }
-
-        if(shipSunk) {
-            System.out.println("You've bloody sunk him old bean, brilliant job.");
-        } else if(hit) {
-            System.out.println("The blighter's still floating, hit him again and that should do it!");
-        }       
-
-        return shipSunk;
+        return sunk;
     }
 }
